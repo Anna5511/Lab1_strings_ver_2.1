@@ -1,6 +1,5 @@
 ﻿// ============================================================================
 // Программа обработки строк с маркерами
-// Формат: <маркер><число><содержимое>[<маркер>][\n]
 // ============================================================================
 
 #include <iostream>
@@ -8,9 +7,6 @@
 
 const unsigned N = 100;
 
-// ============================================================================
-// 🔹 КЛАСС strm
-// ============================================================================
 class strm {
 private:
     char mark;
@@ -19,7 +15,6 @@ private:
 public:
     strm() : mark('\0') { A[0] = '\0'; }
 
-    // 🔹 Метод очистки объекта
     void clear() {
         mark = '\0';
         A[0] = '\0';
@@ -34,15 +29,19 @@ public:
 };
 
 // ============================================================================
-// 🔹 Функция вывода
+// 🔹 Функция вывода — ИСПРАВЛЕНА
 // ============================================================================
 void outp(const char* text, const strm& str, char c)
 {
     std::ofstream file("C:\\Users\\Анечка\\Documents\\out3.txt", std::ios::app);
     const char* data = str.get_A_ptr();
 
-    // 🔹 Проверяем, что строка не пустая (первый символ '\0')
-    if (data[0] != '\0') {
+    // 🔹 Если массив пустой — выводим текст + символ c
+    if (data[0] == '\0') {
+        file << text << c << std::endl;
+    }
+    // 🔹 Если массив не пустой — выводим текст + содержимое массива
+    else {
         file << text;
         for (int i = 0; i <= N; i++) {
             if (data[i] == '\0') {
@@ -54,15 +53,29 @@ void outp(const char* text, const strm& str, char c)
         }
         file << std::endl;
     }
-    else {
-        // 🔹 Пустая строка — выводим только текст и символ
-        file << text << c << std::endl;
-    }
     file.close();
 }
 
 // ============================================================================
-// 🔹 Функция swap
+// 🔹 Вывод только текста (без объекта и символа)
+// ============================================================================
+void outp_text(const char* text) {
+    std::ofstream file("C:\\Users\\Анечка\\Documents\\out3.txt", std::ios::app);
+    file << text << std::endl;
+    file.close();
+}
+
+// ============================================================================
+// 🔹 Вывод числа в файл
+// ============================================================================
+void outp_num(const char* text, int num) {
+    std::ofstream file("C:\\Users\\Анечка\\Documents\\out3.txt", std::ios::app);
+    file << text << num << std::endl;
+    file.close();
+}
+
+// ============================================================================
+// 🔹 swap
 // ============================================================================
 void swap(strm& a, int len)
 {
@@ -72,7 +85,7 @@ void swap(strm& a, int len)
 }
 
 // ============================================================================
-// 🔹 Функция poisk_pos
+// 🔹 poisk_pos
 // ============================================================================
 int poisk_pos(strm& a) {
     for (int i = 0; i <= N; i++) {
@@ -83,7 +96,7 @@ int poisk_pos(strm& a) {
 }
 
 // ============================================================================
-// 🔹 Функция process
+// 🔹 process
 // ============================================================================
 void process(strm& a, int o_pos, int n_pos)
 {
@@ -93,19 +106,9 @@ void process(strm& a, int o_pos, int n_pos)
 }
 
 // ============================================================================
-// 🔹 Вспомогательная: вывод числа в файл
-// ============================================================================
-void outp_num(const char* text, int num) {
-    std::ofstream file("C:\\Users\\Анечка\\Documents\\out3.txt", std::ios::app);
-    file << text << num << std::endl;
-    file.close();
-}
-
-// ============================================================================
-// 🔹 Функция inp — ИСПРАВЛЕННАЯ ВЕРСИЯ
+// 🔹 inp — ИСПРАВЛЕННАЯ ВЕРСИЯ
 // ============================================================================
 bool inp(strm& a) {
-    // Очищаем выходной файл перед записью
     { std::ofstream clear("C:\\Users\\Анечка\\Documents\\out3.txt", std::ios::trunc); clear.close(); }
 
     std::ifstream file("C:\\Users\\Анечка\\Documents\\in3.txt", std::ios::in);
@@ -115,19 +118,17 @@ bool inp(strm& a) {
     char ch;
 
     while (true) {
-        // 🔹 Читаем первый непустой символ — это маркер
         if (!file.get(ch)) break;
         if (ch == '\n' || ch == '\r') continue;
 
-        // 🔹 ВАЖНО: Очищаем объект перед новой строкой!
         a.clear();
 
         char n = file_num + '0';
-        outp("Cтрока №", a, n);
+        outp_text("Cтрока №");
+        outp_num("", file_num);
 
         a.set_mark(ch);
 
-        // 🔹 Читаем число после маркера
         int expected_len = 0;
         bool has_digit = false;
         bool is_negative = false;
@@ -144,92 +145,101 @@ bool inp(strm& a) {
         }
 
         if (!has_digit) {
-            outp("Ошибка: нет числа", a, ' ');
+            outp_text("Ошибка: нет числа");
             while (file.get(ch) && ch != '\n' && ch != '\r');
             file_num++;
-            outp("----------------", a, ' ');
+            outp_text("----------------");
             continue;
         }
 
         if (is_negative) {
-            outp("Ошибка: неверное число (отрицательное значение)", a, ' ');
+            outp_text("Ошибка: неверное число (отрицательное значение)");
             while (file.get(ch) && ch != '\n' && ch != '\r');
             file_num++;
-            outp("----------------", a, ' ');
+            outp_text("----------------");
             continue;
         }
 
         if (expected_len > 100) {
-            outp("Ошибка: число > 100", a, ' ');
+            outp_text("Ошибка: число > 100");
             while (file.get(ch) && ch != '\n' && ch != '\r');
             file_num++;
-            outp("----------------", a, ' ');
+            outp_text("----------------");
             continue;
         }
 
-        // 🔹 Читаем содержимое: до expected_len символов ИЛИ до конца строки
         unsigned actual_len = 0;
-        bool has_extra = false;
+        bool ended_by_marker = false;
 
+        // 🔹 Читаем содержимое
         while (actual_len < (unsigned)expected_len && file.get(ch)) {
             if (ch == '\n' || ch == '\r') break;
             if (actual_len < N) {
                 a.set_A(actual_len, ch);
             }
             actual_len++;
-            if (ch == a.get_mark()) break;
+            if (ch == a.get_mark()) {
+                ended_by_marker = true;
+                break;
+            }
         }
 
-        // 🔹 ПРОВЕРКА: есть ли ещё символы до конца строки?
-        if (actual_len == (unsigned)expected_len) {
+        // 🔹 Проверяем, есть ли лишние символы ПОСЛЕ закрывающего маркера
+        bool has_extra = false;
+        if (!ended_by_marker && actual_len == (unsigned)expected_len) {
             char next_ch;
             while (file.get(next_ch)) {
                 if (next_ch == '\n' || next_ch == '\r') break;
-                has_extra = true;
+                if (next_ch != a.get_mark()) {  // 🔹 Только если это не закрывающий маркер
+                    has_extra = true;
+                }
             }
         }
-        else {
+        else if (!ended_by_marker) {
             while (file.get(ch)) { if (ch == '\n' || ch == '\r') break; }
         }
 
         if (actual_len > N) actual_len = N;
         a.set_A_null(actual_len);
 
-        // 🔹 Вывод служебной информации
+        strm empty;  // 🔹 Пустой объект для сообщений без данных
+
         if (has_extra) {
-            outp("Ошибка - в строке больше 100 символов", a, ' ');
+            outp_text("Ошибка - в строке больше 100 символов");
             file_num++;
-            outp("----------------", a, ' ');
+            outp_text("----------------");
             continue;
         }
 
         if (actual_len < (unsigned)expected_len) {
-            outp("В строке символов меньше нужного, так что считываем все", a, ' ');
+            outp_text("В строке символов меньше нужного, так что считываем все");
         }
         else if (actual_len > (unsigned)expected_len) {
-            outp("В строке символов больше нужного", a, ' ');
+            outp_text("В строке символов больше нужного");
         }
         else if (actual_len == N) {
-            outp("В строке ровно 100 символов", a, ' ');
+            outp_text("В строке ровно 100 символов");
         }
 
-        outp("Маркер: ", a, a.get_mark());
+        // 🔹 Вывод маркера — используем outp с пустым объектом и символом mark
+        outp("Маркер: ", empty, a.get_mark());
         outp_num("Длина считываемой строки: ", expected_len);
         outp("Строка: ", a, ' ');
 
         file_num++;
 
-        // 🔹 Обработка: поиск маркера и сдвиг
         int o_pos = poisk_pos(a);
         if (o_pos == -1) {
-            outp("Ошибка: маркер не найден в строке", a, ' ');
-            outp("----------------", a, ' ');
+            outp_text("Ошибка: маркер не найден в строке");
+            outp_text("----------------");
             continue;
         }
 
         int n_pos = o_pos / 2 + o_pos % 2;
         process(a, o_pos, n_pos);
-        outp("----------------", a, ' ');
+
+        a.clear();
+        outp_text("----------------");
     }
 
     file.close();
