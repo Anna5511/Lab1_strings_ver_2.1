@@ -1,259 +1,225 @@
 ﻿// ============================================================================
 // Программа обработки строк с маркерами
-// struct → class без friend, с сохранением имён функций и переменных
+// Формат: <маркер><число><содержимое>[<маркер>][\n]
 // ============================================================================
 
 #include <iostream>
-#include <iomanip>
 #include <fstream>
 
 const unsigned N = 100;
 
 // ============================================================================
-// 🔹 КЛАСС strm (вместо struct, имена полей сохранены внутри класса)
+// 🔹 КЛАСС strm
 // ============================================================================
 class strm {
 private:
-    // 🔹 Имена полей сохранены: mark, A — но теперь они приватные
     char mark;
     char A[N + 1];
 
 public:
-    // Конструктор
-    strm() : mark('\0') {
+    strm() : mark('\0') { A[0] = '\0'; }
+
+    // 🔹 Метод очистки объекта
+    void clear() {
+        mark = '\0';
         A[0] = '\0';
     }
 
-    // 🔹 Геттеры и сеттеры с теми же "смысловыми" именами
-    //    (доступ к mark и A через интерфейс, имена полей — внутри класса)
-
     char get_mark() const { return mark; }
     void set_mark(char m) { mark = m; }
-
-    char get_A(unsigned idx) const {
-        return (idx <= N) ? A[idx] : '\0';
-    }
-    void set_A(unsigned idx, char c) {
-        if (idx <= N) A[idx] = c;
-    }
-    void set_A_null(unsigned idx) {
-        if (idx <= N) A[idx] = '\0';
-    }
-
+    char get_A(unsigned idx) const { return (idx <= N) ? A[idx] : '\0'; }
+    void set_A(unsigned idx, char c) { if (idx <= N) A[idx] = c; }
+    void set_A_null(unsigned idx) { if (idx <= N) A[idx] = '\0'; }
     const char* get_A_ptr() const { return A; }
-
-    // 🔹 Вспомогательные методы (логика внутри класса)
-    unsigned length() const {
-        unsigned len = 0;
-        while (A[len] != '\0' && len <= N) len++;
-        return len;
-    }
 };
 
 // ============================================================================
-// 🔹 Функция вывода — имя и параметры сохранены (кроме типа строки)
+// 🔹 Функция вывода
 // ============================================================================
-/// <summary>
-/// Функция вывода в файл out.txt
-/// </summary>
-/// <param name="text"> - сообщение</param>
-/// <param name="str"> - объект strm (вместо const char*)</param>
-/// <param name="c"> - символ на вывод</param>
-bool outp(const char* text, const strm& str, char c)
+void outp(const char* text, const strm& str, char c)
 {
     std::ofstream file("C:\\Users\\Анечка\\Documents\\out3.txt", std::ios::app);
+    const char* data = str.get_A_ptr();
 
-    if (!file.is_open()) {
-        std::cout << "Ошибка открытия выходного файла";
-        return false;
-    }
-
-    const char* data = str.get_A_ptr();  // 🔹 доступ через геттер
-
-    // 🔹 Проверка: строка не пустая, если первый символ не '\0'
+    // 🔹 Проверяем, что строка не пустая (первый символ '\0')
     if (data[0] != '\0') {
         file << text;
         for (int i = 0; i <= N; i++) {
             if (data[i] == '\0') {
                 file << std::endl;
                 file.close();
-                return true;
+                return;
             }
             file << data[i];
         }
         file << std::endl;
     }
     else {
+        // 🔹 Пустая строка — выводим только текст и символ
         file << text << c << std::endl;
     }
     file.close();
-    return true;
 }
 
 // ============================================================================
-// 🔹 Функция swap — имя и логика сохранены
+// 🔹 Функция swap
 // ============================================================================
-/// <summary>
-/// Перемещает символы в строке
-/// </summary>
-/// <param name="a"> - структура {маркер ; строка с маркером} </param>
-/// <param name="len"> - изначальная позиция маркера </param>
 void swap(strm& a, int len)
 {
-    // 🔹 Доступ к данным через публичный интерфейс
     char temp = a.get_A(0);
-    for (int i = 0; i < len; i++) {
-        a.set_A(i, a.get_A(i + 1));
-    }
+    for (int i = 0; i < len; i++) { a.set_A(i, a.get_A(i + 1)); }
     a.set_A(len, temp);
 }
 
 // ============================================================================
-// 🔹 Функция poisk_pos — имя и логика сохранены
+// 🔹 Функция poisk_pos
 // ============================================================================
-/// <summary>
-/// Ищет изначальную позицию маркера
-/// </summary>
-/// <param name="a"> - структура {маркер ; строка с маркером} </param>
-/// <returns>позиция маркера</returns>
 int poisk_pos(strm& a) {
-    int o_pos = 0;
-
-    // 🔹 Ищем маркер, сравнивая с get_mark() и читая через get_A()
-    while (a.get_A(o_pos) != '\0') {
-        if (a.get_A(o_pos) == a.get_mark()) {
-            return o_pos;
-        }
-        o_pos++;
+    for (int i = 0; i <= N; i++) {
+        if (a.get_A(i) == '\0') break;
+        if (a.get_A(i) == a.get_mark()) return i;
     }
-    return -1;  // 🔹 явный возврат, если не найдено
+    return -1;
 }
 
 // ============================================================================
-// 🔹 Функция process — имя и логика сохранены
+// 🔹 Функция process
 // ============================================================================
-/// <summary>
-/// Основная работа программы - перемещение символов в строке
-/// </summary>
-/// <param name="a"> - структура {маркер ; строка с маркером} </param>
-/// <param name="o_pos"> - old marker position (конец строки)</param>
-/// <param name="n_pos"> - new marker position (середина строки)</param>
 void process(strm& a, int o_pos, int n_pos)
 {
     int len = o_pos;
-    while (o_pos != n_pos) {
-        swap(a, len);  // 🔹 вызов внешней функции, которая работает через интерфейс
-        o_pos--;
-    }
+    while (o_pos != n_pos) { swap(a, len); o_pos--; }
     outp("Результат : ", a, ' ');
 }
 
 // ============================================================================
-// 🔹 Функция inp — имя и логика сохранены, доступ к данным через интерфейс
+// 🔹 Вспомогательная: вывод числа в файл
 // ============================================================================
-/// <summary>
-/// Функция ввода из файла
-/// </summary>
-/// <param name="a"> - структура {маркер ; строка с маркером} </param>
-/// <returns>успех операции</returns>
+void outp_num(const char* text, int num) {
+    std::ofstream file("C:\\Users\\Анечка\\Documents\\out3.txt", std::ios::app);
+    file << text << num << std::endl;
+    file.close();
+}
+
+// ============================================================================
+// 🔹 Функция inp — ИСПРАВЛЕННАЯ ВЕРСИЯ
+// ============================================================================
 bool inp(strm& a) {
-    int file_num = 1;
+    // Очищаем выходной файл перед записью
+    { std::ofstream clear("C:\\Users\\Анечка\\Documents\\out3.txt", std::ios::trunc); clear.close(); }
+
     std::ifstream file("C:\\Users\\Анечка\\Documents\\in3.txt", std::ios::in);
+    if (!file.is_open()) { std::cout << "Ошибка открытия входного файла"; return false; }
 
-    char stop;
-    char c;
+    int file_num = 1;
+    char ch;
 
-    if (!file.is_open()) {
-        std::cout << "Ошибка открытия входного файла";
-        return false;
-    }
-    
+    while (true) {
+        // 🔹 Читаем первый непустой символ — это маркер
+        if (!file.get(ch)) break;
+        if (ch == '\n' || ch == '\r') continue;
 
-    while (!(file.eof())) {
+        // 🔹 ВАЖНО: Очищаем объект перед новой строкой!
+        a.clear();
+
         char n = file_num + '0';
         outp("Cтрока №", a, n);
 
-        // 🔹 Чтение маркера через сеттер
-        file.get(c);
-        a.set_mark(c);
+        a.set_mark(ch);
 
-        if (a.get_mark() == '\n') {
-            outp("Ошибка - пустая строка", a, ' ');
+        // 🔹 Читаем число после маркера
+        int expected_len = 0;
+        bool has_digit = false;
+        bool is_negative = false;
+
+        if (file.peek() == '-') {
+            file.get(ch);
+            is_negative = true;
+        }
+
+        while (file.peek() >= '0' && file.peek() <= '9') {
+            file.get(ch);
+            expected_len = expected_len * 10 + (ch - '0');
+            has_digit = true;
+        }
+
+        if (!has_digit) {
+            outp("Ошибка: нет числа", a, ' ');
+            while (file.get(ch) && ch != '\n' && ch != '\r');
             file_num++;
             outp("----------------", a, ' ');
             continue;
         }
 
-        file.get(stop);
-        if (stop == '\n') {
-            outp("Ошибка - нет ограничителя", a, ' ');
+        if (is_negative) {
+            outp("Ошибка: неверное число (отрицательное значение)", a, ' ');
+            while (file.get(ch) && ch != '\n' && ch != '\r');
             file_num++;
             outp("----------------", a, ' ');
             continue;
         }
 
-        unsigned i = 0;
-        bool flag = false;
-
-        while (file.get(c)) {
-            // 🔹 Сравнение через геттеры
-            if (c == stop || c == a.get_mark()) break;
-            if (c == '\n' || file.eof()) {
-                file_num++;
-                outp("Ошибка - в строке нет маркера и ограничителя", a, ' ');
-                outp("----------------", a, ' ');
-                flag = true;
-                break;
-            }
-
-            // 🔹 Запись через сеттер
-            a.set_A(i, c);
-            i++;
-            if (i > N) {
-                outp("Ошибка - в строке больше 100 символов", a, ' ');
-                file_num++;
-                outp("----------------", a, ' ');
-                flag = true;
-                break;
-            }
-        }
-
-        if (flag) {
-            while (file.get(c)) {
-                if (c == '\n') break;
-                if (file.eof()) return true;
-            }
+        if (expected_len > 100) {
+            outp("Ошибка: число > 100", a, ' ');
+            while (file.get(ch) && ch != '\n' && ch != '\r');
+            file_num++;
+            outp("----------------", a, ' ');
             continue;
         }
 
-        if (i == 0) {
-            outp("Ошибка - пустая строка", a, ' ');
-            return false;
+        // 🔹 Читаем содержимое: до expected_len символов ИЛИ до конца строки
+        unsigned actual_len = 0;
+        bool has_extra = false;
+
+        while (actual_len < (unsigned)expected_len && file.get(ch)) {
+            if (ch == '\n' || ch == '\r') break;
+            if (actual_len < N) {
+                a.set_A(actual_len, ch);
+            }
+            actual_len++;
+            if (ch == a.get_mark()) break;
         }
 
-        // 🔹 Завершение строки через сеттеры
-        if (i == N) {
+        // 🔹 ПРОВЕРКА: есть ли ещё символы до конца строки?
+        if (actual_len == (unsigned)expected_len) {
+            char next_ch;
+            while (file.get(next_ch)) {
+                if (next_ch == '\n' || next_ch == '\r') break;
+                has_extra = true;
+            }
+        }
+        else {
+            while (file.get(ch)) { if (ch == '\n' || ch == '\r') break; }
+        }
+
+        if (actual_len > N) actual_len = N;
+        a.set_A_null(actual_len);
+
+        // 🔹 Вывод служебной информации
+        if (has_extra) {
+            outp("Ошибка - в строке больше 100 символов", a, ' ');
+            file_num++;
+            outp("----------------", a, ' ');
+            continue;
+        }
+
+        if (actual_len < (unsigned)expected_len) {
+            outp("В строке символов меньше нужного, так что считываем все", a, ' ');
+        }
+        else if (actual_len > (unsigned)expected_len) {
+            outp("В строке символов больше нужного", a, ' ');
+        }
+        else if (actual_len == N) {
             outp("В строке ровно 100 символов", a, ' ');
-            a.set_A(i, a.get_mark());
-        }
-        if (i < N) {
-            a.set_A(i, a.get_mark());
-            a.set_A_null(i + 1);
         }
 
-        // 🔹 Вывод через геттеры
         outp("Маркер: ", a, a.get_mark());
-        outp("Ограничитель: ", a, stop);
+        outp_num("Длина считываемой строки: ", expected_len);
         outp("Строка: ", a, ' ');
-
-        while (file.get(c)) {
-            if (c == '\n') break;
-            if (file.eof()) return true;
-        }
 
         file_num++;
 
-        // 🔹 Поиск позиции через внешнюю функцию (работает с интерфейсом)
+        // 🔹 Обработка: поиск маркера и сдвиг
         int o_pos = poisk_pos(a);
         if (o_pos == -1) {
             outp("Ошибка: маркер не найден в строке", a, ' ');
@@ -263,7 +229,6 @@ bool inp(strm& a) {
 
         int n_pos = o_pos / 2 + o_pos % 2;
         process(a, o_pos, n_pos);
-
         outp("----------------", a, ' ');
     }
 
@@ -272,25 +237,11 @@ bool inp(strm& a) {
 }
 
 // ============================================================================
-// 🔹 main — без изменений
+// 🔹 main
 // ============================================================================
 int main() {
     setlocale(LC_ALL, "ru");
-    strm file;  // 🔹 объект класса (вызовется конструктор)
-
-    if (!inp(file)) return 0;
+    strm data;
+    if (!inp(data)) return 0;
     return 0;
 }
-
-// ============================================================================
-// 📋 Что изменено (минимально, с сохранением имён):
-// ============================================================================
-// 1. struct strm → class strm { private: mark, A; public: интерфейс }
-// 2. Имена полей mark и A — сохранены внутри класса (но приватные)
-// 3. Имена функций: outp, swap, poisk_pos, process, inp — без изменений
-// 4. Имена локальных переменных: o_pos, n_pos, len, temp, i, flag, c, stop — без изменений
-// 5. Доступ к данным: вместо a.mark → a.get_mark(), вместо a.A[i] → a.get_A(i)
-// 6. Нет friend-функций: все внешние функции работают через публичный интерфейс
-// 7. Добавлены проверки границ в сеттерах для безопасности
-// 8. Конструктор инициализирует объект в безопасном состоянии
-// ============================================================================
