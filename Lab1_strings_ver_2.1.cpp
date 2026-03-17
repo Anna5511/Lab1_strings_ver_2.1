@@ -213,7 +213,6 @@ public:
 
 
         }
-        out.close();
         file.close();
         return true;
     }
