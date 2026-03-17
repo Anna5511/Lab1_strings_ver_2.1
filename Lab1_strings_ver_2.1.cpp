@@ -10,26 +10,37 @@ private:
     char mark; char A[N + 1];
 
     /// <summary>
-    /// Функция вывода пустоты в файл out.txt
+    /// Функция вывода символа в файл out.txt
     /// </summary>
     /// <param name="text"> - сообщение</param>
     /// <param name="c"> - символ на вывод</param>
-    void outp(const char* text, char c)
+    bool outp(const char* text, char c)
     {
         std::ofstream file("C:\\Users\\Анечка\\Documents\\out3.txt", std::ios::app);
+
+        if (!file.is_open()) {
+            std::cout << "Ошибка открытия выходного файла";
+            return false;
+        }
+
         file << text << c << std::endl;
 
         file.close();
+        return true;
     }
 
     /// <summary>
     /// Функция вывода строки в файл out.txt
     /// </summary>
     /// <param name="text"> - сообщение</param>
-    /// <param name="c"> - символ на вывод</param>
-    void output(const char* text, char c)
+    bool output(const char* text)
     {
-        std::ofstream file("out.txt", std::ios::app);
+        std::ofstream file("C:\\Users\\Анечка\\Documents\\out3.txt", std::ios::app);
+
+        if (!file.is_open()) {
+            std::cout << "Ошибка открытия выходного файла";
+            return false;
+        }
 
         if (A != "") {
             file << text;
@@ -45,12 +56,12 @@ private:
         }
 
         file.close();
+        return true;
     }
 
     /// <summary>
     /// Перемещает символы в строке
     /// </summary>
-    /// <param name="a"> - структура {маркер ; строка с маркером} </param>
     /// <param name="len"> - изначальная позиция маркера </param>
     void swap(int len)
     {
@@ -64,7 +75,6 @@ private:
     /// <summary>
     /// Ищет изначальную позицию маркера
     /// </summary>
-    /// <param name="a"> - структура {маркер ; строка с маркером} </param>
     /// <returns></returns>
     int find_pos() {
         int o_pos = 0;
@@ -81,7 +91,6 @@ private:
     /// <summary>
     /// Основная работа программы - перемещение символов в строке
     /// </summary>
-    /// <param name="a"> - структура {маркер ; строка с маркером} </param>
     /// <param name="o_pos"> - old marker position (конец строки)</param>
     /// <param name="n_pos"> - new marker position (середина строки)</param>
     void process(int o_pos, int n_pos)
@@ -91,7 +100,7 @@ private:
             swap(len);
             o_pos--;
         }
-        output("Результат : ", ' ');
+        output("Результат : ");
 
     }
 
@@ -100,12 +109,10 @@ public:
     /// <summary>
     /// Функция ввода из файла
     /// </summary>
-    /// <param name="a"> - структура {маркер ; строка с маркером} </param>
     /// <returns></returns>
     bool inp() {
         int file_num = 1;
         std::ifstream file("C:\\Users\\Анечка\\Documents\\in3.txt", std::ios::in);
-        std::ofstream out("C:\\Users\\Анечка\\Documents\\out3.txt", std::ios::out);
 
         char stop;
         char c;
@@ -114,10 +121,7 @@ public:
             std::cout << "Ошибка открытия входного файла";
             return false;
         }
-        if (!out.is_open()) {
-            std::cout << "Ошибка открытия выходного файла";
-            return false;
-        }
+        
 
         //читает построчно файл, считывает маркеты и ограничители, читает строки, если что-то не так, то выдает ошибки
         while (!(file.eof())) {
@@ -191,7 +195,7 @@ public:
 
             outp("Маркер: ", mark);
             outp("Ограничитель: ", stop);
-            output("Строка: ", ' ');
+            output("Строка: ");
 
             while (file.get(c)) {
                 if (c == '\n') break;
@@ -215,9 +219,6 @@ public:
     }
 
 };
-
-
-
 
 int main() {
     setlocale(LC_ALL, "ru");
