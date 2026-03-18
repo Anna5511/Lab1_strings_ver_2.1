@@ -8,7 +8,9 @@ class StringStream
 private:
 
     char mark; char A[N + 1];
-
+    
+    
+    
     /// <summary>
     /// Функция вывода символа в файл out.txt
     /// </summary>
@@ -105,6 +107,9 @@ private:
     }
 
 public:
+
+    StringStream();
+    ~StringStream();
 
     /// <summary>
     /// Функция ввода из файла
@@ -218,6 +223,15 @@ public:
     }
 
 };
+
+StringStream::StringStream(){
+    //конструктор
+}
+StringStream::~StringStream() {
+    //деструктор
+}
+
+
 
 int main() {
     setlocale(LC_ALL, "ru");
