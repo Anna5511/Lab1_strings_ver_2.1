@@ -117,11 +117,11 @@ bool strm::readLine(std::ifstream& file, strm& a, int n) {
     char stop;
     // Читаем ограничитель
     if (!file.get(stop)) {
-        outp("Ошибка: Пустой входной файл", "", ' ');
+        outp("Ошибка: Пусто", "", ' ');
         return false;
     }
     if (stop == '\n') {
-        outp("Ошибка: Пустая строка (нет маркера)", "", ' ');
+        outp("Ошибка: Пусто", "", ' ');
         return false;
     }
     a.setMark(stop);
