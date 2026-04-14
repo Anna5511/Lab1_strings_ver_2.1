@@ -30,8 +30,8 @@ public:
 
     ///////////////////////////
 
-    void outp(const char* text, const char* str, char mark_symbol);
-    void outp_n(const char* text, int n);
+    //void outp(const char* text, const char* str, char mark_symbol);
+    //void outp_n(const char* text, int n);
 
     void swap(strm& a);
     int poisk_pos(strm& a);
@@ -46,7 +46,7 @@ void clear_File() {
     File.close();
 }
 
-void strm::outp(const char* text, const char* str, char mark_symbol)
+void outp(const char* text, const char* str, char mark_symbol)
 {
     std::ofstream file("C:\\Users\\Анечка\\Documents\\out3.txt", std::ios::app);
     if (str[0] != '\0') {
@@ -67,7 +67,7 @@ void strm::outp(const char* text, const char* str, char mark_symbol)
     file.close();
 }
 
-void strm::outp_n(const char* text, int n) {
+void outp_n(const char* text, int n) {
     std::ofstream file("C:\\Users\\Анечка\\Documents\\out3.txt", std::ios::app);
     if (n != 0) file << "-------------------" << std::endl;
     file << text << n << std::endl;
@@ -207,7 +207,7 @@ int main()
     // Основной цикл обработки
     while (!file.eof()) {
         strm string;
-        string.outp_n("Номер строки: ", lineNumber);
+        outp_n("Номер строки: ", lineNumber);
 
         if (string.readLine(file, string, lineNumber)) string.process(string);
         lineNumber++;
