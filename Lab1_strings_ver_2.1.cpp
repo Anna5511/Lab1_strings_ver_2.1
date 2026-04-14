@@ -21,12 +21,12 @@ public:
     void setMark(char m) { mark = m; }
     void setChar(int i, char c) { A[i] = c; }
 
-    void clear(char m) {
+    /*void clear(char m) {
         mark = m;
         for (int i = 0; i <= N; i++) {
             A[i] = m;
         }
-    }
+    }*/
 
     ///////////////////////////
 
