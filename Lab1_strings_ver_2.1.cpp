@@ -37,6 +37,7 @@ public:
     int poisk_pos(strm& a);
     void process(strm& a);
     void skipToNextLine(std::ifstream& file);
+    bool readLine(std::ifstream& file, strm& a, int n);
 
 };
 
@@ -111,7 +112,7 @@ void strm::skipToNextLine(std::ifstream& file) {
     }
 }
 
-bool readLine(std::ifstream& file, strm& a, int n) {
+bool strm::readLine(std::ifstream& file, strm& a, int n) {
     char c = ' ';
     char stop;
     // Читаем ограничитель
@@ -158,7 +159,7 @@ bool readLine(std::ifstream& file, strm& a, int n) {
 }
 
 bool out_file_check() {
-    std::ifstream file("C:\\Users\\Анечка\\Documents\\out1.txt");
+    std::ifstream file("C:\\Users\\Анечка\\Documents\\out3.txt");
     if (!file.is_open()) {
         std::cout << "Ошибка открытия выходного файла";
         file.close();
@@ -170,7 +171,7 @@ bool out_file_check() {
     }
 }
 bool in_file_check() {
-    std::ifstream file("C:\\Users\\Анечка\\Documents\\in1.txt");
+    std::ifstream file("C:\\Users\\Анечка\\Documents\\in3.txt");
     if (!file.is_open()) {
         outp("Ошибка открытия входного файла", "", ' ');
         file.close();
@@ -200,15 +201,15 @@ int main()
     if (out_file_check()) return 0;
 
 
-    std::ifstream file("C:\\Users\\Анечка\\Documents\\in1.txt");
+    std::ifstream file("C:\\Users\\Анечка\\Documents\\in3.txt");
     int lineNumber = 0;
 
     // Основной цикл обработки
     while (!file.eof()) {
         strm string;
-        outp_n("Номер строки: ", lineNumber);
+        string.outp_n("Номер строки: ", lineNumber);
 
-        if (readLine(file, string, lineNumber)) process(string);
+        if (string.readLine(file, string, lineNumber)) string.process(string);
         lineNumber++;
 
         for (int i = 0; i <= N; i++) {
