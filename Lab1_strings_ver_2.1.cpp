@@ -7,18 +7,18 @@ const unsigned N = 100;
 
 class strm {
 private:
-    char mark;
+    int len;
     char A[N + 1];
 
 public:
     strm();
     ~strm();
 
-    char getMark() const { return mark; }
+    char getLen() const { return len; }
     char getChar(int i) const { return A[i]; }
     const char* getString() const { return A; }
 
-    void setMark(char m) { mark = m; }
+    void setLen(int n) { len = n; }
     void setChar(int i, char c) { A[i] = c; }
 
     /*void clear(char m) {
@@ -28,13 +28,7 @@ public:
         }
     }*/
 
-    ///////////////////////////
-
-    //void outp(const char* text, const char* str, char mark_symbol);
-    //void outp_n(const char* text, int n);
-
     void swap(strm& a);
-    int poisk_pos(strm& a);
     void process(strm& a);
     void skipToNextLine(std::ifstream& file);
     bool readLine(std::ifstream& file, strm& a, int n);
@@ -46,63 +40,51 @@ void clear_File() {
     File.close();
 }
 
-void outp(const char* text, const char* str, char mark_symbol)
-{
+void outp(const char* text, char symbol, strm& a) {
     std::ofstream file("C:\\Users\\Анечка\\Documents\\out3.txt", std::ios::app);
-    if (str[0] != '\0') {
-        file << text;
-        for (int i = 0; i <= N; i++) {
-            if (str[i] != mark_symbol) {
-                file << str[i];
-            }
-            else {
-                file << std::endl;
-                break;
-            }
+    file << text;
+    if (symbol == ' ') {
+        for (int i = 0; i < a.getLen(); i++) {
+            file << a.getChar(i);
         }
     }
     else {
-        file << text << mark_symbol << std::endl;
+        file << symbol;
     }
+    file << std::endl;
     file.close();
 }
 
 void outp_n(const char* text, int n) {
     std::ofstream file("C:\\Users\\Анечка\\Documents\\out3.txt", std::ios::app);
-    if (n != 0) file << "-------------------" << std::endl;
     file << text << n << std::endl;
     file.close();
 }
 
-void strm::swap(strm& a) {
-
-    char temp = a.getChar(0);
-    for (int i = 0; i < N; i++) {
-        if (a.getChar(i + 1) != a.getMark()) {
-            a.setChar(i, a.getChar(i + 1));
-        }
-        else {
-            a.setChar(i, temp);
-            break;
-        }
-    }
+void outp_t(const char* text) {
+    std::ofstream file("C:\\Users\\Анечка\\Documents\\out3.txt", std::ios::app);
+    file << text;
+    file << std::endl;
+    file.close();
 }
 
-int strm::poisk_pos(strm& a) {
-    int pos = 0;
-    while (a.getChar(pos) != a.getMark() && pos != N) {
-        pos++;
-    }return pos;
+void strm::swap(strm& a) {
+    if (a.getLen() <= 1) return;
+    char temp = a.getChar(0);
+    for (int i = 0; i < a.getLen() - 1; i++) {
+        a.setChar(i, a.getChar(i + 1));
+    }
+    a.setChar(a.getLen() - 1, temp);
 }
 
 void strm::process(strm& a) {
-    int pos = poisk_pos(a);
-    int pos_count = pos / 2 + pos % 2;
-    outp("Строка : ", a.getString(), a.getMark());
-    for (int i = 0; i < pos_count; i++) {
-        swap(a);
-    }
-    outp("Результат : ", a.getString(), a.getMark());
+    if (a.getLen() <= 0) return;
+    int pos_count = a.getLen() / 2;
+    outp_n("Количество символов в строке : ", a.getLen());
+    outp_n("Сколько раз свапаем : ", pos_count);
+    outp("Строка до свапа : ", ' ', a);
+    for (int i = 0; i < pos_count; i++) swap(a);
+    outp("Результат : ", ' ', a);
 }
 
 void strm::skipToNextLine(std::ifstream& file) {
@@ -117,44 +99,41 @@ bool strm::readLine(std::ifstream& file, strm& a, int n) {
     char stop;
     // Читаем ограничитель
     if (!file.get(stop)) {
-        outp("Ошибка: Пусто", "", ' ');
+        outp_t("Ошибка: Пусто");
         return false;
     }
     if (stop == '\n') {
-        outp("Ошибка: Пусто", "", ' ');
+        outp_t("Ошибка: Пусто");
         return false;
     }
-    a.setMark(stop);
-
-    outp("Ограничитель : ", "", a.getMark());
+    
+    outp("Ограничитель : ", stop, a);
 
     // Читаем строку до ограничителя
     unsigned i = 0;
 
     while (file.get(c) && c != '\n') {
-
-        if (c == stop || c == a.getMark()) {
+        if (c == stop) {
+            a.setLen(i);
             skipToNextLine(file);
-            // Добавляем маркер в конец
-            a.setChar(i, a.getMark());
             return true;
         }
         a.setChar(i, c);
         i++;
         if (i == N) {
-            outp("В строке взяты первые 100 символов", "", ' ');
+            outp_t("В строке взяты первые 100 символов");
+            a.setLen(i);
             skipToNextLine(file);
             break;
         }
     }
     if (i == 0) {
-        outp("В строке нет символов", "", ' ');
+        outp_t("В строке нет символов");
         return false;
 
     }
-    // Добавляем маркер в конец
-    a.setChar(i, a.getMark());
 
+    a.setLen(i);
     return true;
 }
 
@@ -173,7 +152,7 @@ bool out_file_check() {
 bool in_file_check() {
     std::ifstream file("C:\\Users\\Анечка\\Documents\\in3.txt");
     if (!file.is_open()) {
-        outp("Ошибка открытия входного файла", "", ' ');
+        outp_t("Ошибка открытия входного файла");
         file.close();
         return true;
     }
@@ -183,7 +162,7 @@ bool in_file_check() {
     }
 }
 
-strm::strm() : mark('\0') {
+strm::strm() : len(0) {
     //конструктор
     for (int i = 0; i <= N; i++) {
         A[i] = '\0';
@@ -207,14 +186,10 @@ int main()
     // Основной цикл обработки
     while (!file.eof()) {
         strm string;
-        outp_n("Номер строки: ", lineNumber);
+        outp_n("-------------- Номер строки: ", lineNumber);
 
         if (string.readLine(file, string, lineNumber)) string.process(string);
         lineNumber++;
-
-        for (int i = 0; i <= N; i++) {
-            string.setChar(i, string.getMark());
-        }
     }
 
     return 1;
